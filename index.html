@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -28,10 +27,6 @@
     --logo-size:    132px;
     --logo-half:    66px;
     --arc-depth:    20px;
-    /* arc-top-offset = logo-half - arc-depth = 66 - 20 = 46px
-       BEZIER: ponto de controle = 2×depth = 40  → midpoint y = 20 ✓
-         SVG top (y=0)  = cover fundo nas bordas  (page 185)
-         SVG bot (y=20) = cover fundo no centro   (page 205) = logo center */
     --arc-top-offset: 46px;
   }
 
@@ -60,9 +55,13 @@
       radial-gradient(ellipse 50% 40% at 10% 80%, rgba(150,40,60,0.38) 0%, transparent 55%),
       linear-gradient(175deg, #621020 0%, #7A2030 35%, #962838 65%, #621020 100%);
   }
+  /* ── AJUSTE 2: fundo responsivo ──
+     background-size:cover + center garantem que a imagem
+     de fundo preencha sem distorção em qualquer tela. */
   .hero-bg-img {
     position: fixed; inset: 0; z-index: 0;
-    background-size: cover; background-position: center;
+    background-size: cover;
+    background-position: center center;
     background-image: url('https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1200&q=80');
     opacity: 0.26; mix-blend-mode: luminosity;
   }
@@ -76,66 +75,91 @@
   }
 
   /* ═══════════════════════════════════════════════
-     COVER  —  border-radius cria o arco "ponte"
-     Com 50%/22px: as duas curvas dos cantos
-     inferiores encontram-se no centro exato,
-     formando uma calha única de 22px de profundidade.
-     Cover bottom nas bordas = 205-22 = 183px (página)
-     Cover bottom no centro  = 205px          (página)
+     COVER — clip-path com a MESMA bezier do SVG bridge.
+
+     Problema original: border-radius gera curva ELÍPTICA;
+     o SVG bridge usa bezier QUADRÁTICA — formas distintas
+     que se desalinham em qualquer largura de viewport.
+
+     Solução: clip-path: url(#coverClip) com clipPath
+     em objectBoundingBox, usando a mesma equação que o
+     bridge path "M 0 0 Q 50 40 100 0".
+
+     Math (objectBoundingBox, cover height = 205px):
+       — Bridge top (bordas) = 185px → 185/205 = 0.9024
+       — Bridge dip (centro)  = 205px → 205/205 = 1.0
+       — Bezier ctrl Cy: 2×1.0 − (0.9024+0.9024)×0.5 = 1.0976
+       — Path: M 0 0 L 1 0 L 1 0.9024 Q 0.5 1.0976 0 0.9024 Z
+
+     Isso garante que a borda inferior do banner coincide
+     pixel a pixel com a linha curva SVG, em qualquer
+     largura de tela.
   ═══════════════════════════════════════════════ */
   .cover-section {
     position: relative;
     height: 205px;
     margin-left: -20px; margin-right: -20px;
     flex-shrink: 0;
+    /* clip-path substitui border-radius — recorte pela
+       curva bezier idêntica ao bridge SVG              */
+    clip-path: url(#coverClip);
+    /* overflow:hidden como fallback adicional */
     overflow: hidden;
-    border-radius: 0 0 50% 50% / 0 0 20px 20px;
   }
+
+  /* ── AJUSTE 1: banner responsivo ──
+     background-size:cover  = object-fit:cover (sem distorção)
+     background-position:center center → foco central equilibrado
+       mobile : corte simétrico, sem zoom exagerado
+       desktop: sem esticamento
+     clip-path do pai garante o recorte exato na linha curva. */
   .cover-section-img {
     position: absolute; inset: 0;
     background-image: url('https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1200&q=80');
-    background-size: cover; background-position: center 28%;
-    opacity: 0.44; mix-blend-mode: luminosity;
+    background-size: cover;
+    background-position: center center;
+    opacity: 0.82;
   }
-  .cover-section-overlay {
+
+  /* ── AJUSTE 2: overlay de cor REMOVIDO ──
+     O div .cover-section-overlay foi suprimido do HTML.
+     O gradiente abaixo serve apenas como vinheta suave
+     nas bordas para integrar ao fundo escuro — sem
+     camada vermelha sólida sobre a imagem.             */
+  .cover-section-vignette {
     position: absolute; inset: 0;
-    background: linear-gradient(175deg,
-      rgba(98,16,32,0.18) 0%, rgba(80,14,26,0.42) 55%, rgba(46,8,18,0.88) 100%);
+    /* Vinheta mínima: escurece só as bordas e o fundo,
+       sem sufocar a imagem central */
+    background: linear-gradient(
+      to bottom,
+      rgba(62, 10, 20, 0.18) 0%,
+      rgba(46,  8, 18, 0.08) 40%,
+      rgba(30,  5, 12, 0.52) 100%
+    );
+    pointer-events: none;
   }
 
   /* ═══════════════════════════════════════════════
-     PROFILE JUNCTION  —  efeito ponte
-
-     Mapa vertical (origem = topo da página):
-       139px  ← junction top  (= 205 − 66)
-       183px  ← cover fundo nas bordas = SVG top (139+44)
-       205px  ← cover fundo no centro  = SVG bot (139+66) = logo center
-       271px  ← logo bottom (139+132)
-
-     O SVG escapa o padding de 20px (left:-20px /
-     width:calc(100%+40px)) para ficar alinhado
-     com o cover, que também escapa esse padding.
+     PROFILE JUNCTION
   ═══════════════════════════════════════════════ */
   .profile-junction {
     position: relative;
-    height: var(--logo-size);               /* 132px */
-    margin-top: calc(-1 * var(--logo-half));/* -66px */
+    height: var(--logo-size);
+    margin-top: calc(-1 * var(--logo-half));
     flex-shrink: 0;
     z-index: 2;
   }
 
-  /* SVG full-width — alinhado ao recorte do cover */
   .bridge-svg {
     position: absolute;
-    top: var(--arc-top-offset);   /* 46px — bordas da linha coincidem com cover bottom (sides) */
+    top: var(--arc-top-offset);
     left: -20px;
     width: calc(100% + 40px);
-    height: var(--arc-depth);     /* 20px */
+    height: var(--arc-depth);
     display: block;
     overflow: visible;
   }
 
-  /* Linha base */
   .bridge-base {
     fill: none;
     stroke: rgba(165, 50, 70, 0.45);
@@ -143,13 +167,6 @@
     vector-effect: non-scaling-stroke;
   }
 
-  /*
-    Shimmer L e R convergem para o centro (logo).
-    bridge-shine-l: M 0 0 → logo  (esq→centro)
-    bridge-shine-r: M 100 0 → logo (dir→centro)
-    dasharray="28 300" highlight pequeno, gap largo
-    Ambos animados com o mesmo keyframe: sincronizados.
-  */
   .bridge-shine-l,
   .bridge-shine-r {
     fill: none;
@@ -170,8 +187,6 @@
     74%, 100%  { stroke-dashoffset: -28; opacity: 0;  }
   }
 
-  /* Logo — top:0 → logo center = 0+66 = 66px dentro da junction
-             = 139+66 = 205px na página = cover center bottom = arco dip ✓ */
   .profile-logo-circle {
     position: absolute;
     top: 0;
@@ -213,7 +228,7 @@
   .profile-tagline em { font-style: normal; color: rgba(255,200,208,0.95); font-weight: 400; }
 
   /* ═══════════════════════════════════════════════
-     DIVISÓRIA COM ESTRELA (inalterado)
+     DIVISÓRIA COM ESTRELA
   ═══════════════════════════════════════════════ */
   .section-divider { display: flex; align-items: center; gap: 14px; margin: 28px 0; }
   .divider-line {
@@ -260,7 +275,7 @@
   }
 
   /* ═══════════════════════════════════════════════
-     BOTÕES (inalterado)
+     BOTÕES
   ═══════════════════════════════════════════════ */
   .professionals { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
   .pro-btn {
@@ -358,7 +373,7 @@
   .footer-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--primary-glow); }
 
   /* ═══════════════════════════════════════════════
-     BOTTOM SHEET (inalterado)
+     BOTTOM SHEET
   ═══════════════════════════════════════════════ */
   .sheet-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(30,5,10,0); pointer-events: none; transition: background 300ms var(--ease-in-out); }
   .sheet-overlay.open { background: rgba(30,5,10,0.84); pointer-events: auto; }
@@ -385,30 +400,77 @@
   .sheet-close { background: none; border: none; cursor: pointer; color: rgba(240,160,172,0.45); padding: 4px; transition: color 200ms; -webkit-tap-highlight-color: transparent; }
   .sheet-close:hover { color: rgba(255,210,218,0.9); }
 
-  /* FORMULÁRIO */
+  /* ── AJUSTE 3: formulário — fundo branco, texto preto, tipografia grossa ──
+     Só os campos de input mudam; sheet container e decorações permanecem.  */
   .form-field { margin-bottom: 14px; }
-  .form-label { display: block; font-family: var(--font-body); font-size: 9.5px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(240,184,192,0.85); margin-bottom: 7px; }
-  .form-input, .form-textarea { width: 100%; background: rgba(255,200,208,0.12); border: 1px solid rgba(180,80,100,0.45); border-radius: 3px; padding: 11px 14px; font-family: var(--font-body); font-size: 14px; font-weight: 400; color: var(--off-white); outline: none; transition: border-color 200ms, background 200ms; -webkit-appearance: none; appearance: none; }
-  .form-input::placeholder, .form-textarea::placeholder { color: rgba(220,150,162,0.52); font-weight: 300; }
-  .form-input:focus, .form-textarea:focus { border-color: rgba(201,74,90,0.72); background: rgba(255,200,208,0.20); }
-  .form-textarea { resize: none; height: 76px; line-height: 1.5; }
+  .form-label {
+    display: block; font-family: var(--font-body);
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.20em; text-transform: uppercase;
+    color: rgba(255,210,218,0.92); margin-bottom: 7px;
+  }
+  .form-input, .form-textarea {
+    width: 100%;
+    background: #ffffff;
+    border: 1.5px solid rgba(201,74,90,0.38);
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 500;
+    color: #1a0408;
+    outline: none;
+    transition: border-color 200ms, box-shadow 200ms;
+    -webkit-appearance: none; appearance: none;
+  }
+  .form-input::placeholder, .form-textarea::placeholder {
+    color: rgba(100,30,40,0.38);
+    font-weight: 400;
+  }
+  .form-input:focus, .form-textarea:focus {
+    border-color: #C94A5A;
+    box-shadow: 0 0 0 3px rgba(201,74,90,0.12);
+    background: #fff;
+  }
+  .form-textarea { resize: none; height: 80px; line-height: 1.55; }
   .service-chips-form { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-  .service-chip-form { font-family: var(--font-body); font-size: 15px; font-weight: 400; color: rgba(242,190,198,0.90); padding: 10px 20px; border: 1px solid rgba(220,130,148,0.46); border-radius: 2px; cursor: pointer; background: rgba(255,190,200,0.07); transition: all 160ms; -webkit-tap-highlight-color: transparent; }
-  .service-chip-form.selected, .service-chip-form:hover { background: rgba(230,130,148,0.15); border-color: rgba(220,130,148,0.72); color: rgba(255,210,218,0.95); }
+  /* ── AJUSTE 4: chips — estado padrão branco/neutro ── */
+  .service-chip-form {
+    font-family: var(--font-body); font-size: 15px; font-weight: 500;
+    color: rgba(255,210,218,0.90);
+    padding: 10px 20px;
+    border: 1.5px solid rgba(220,130,148,0.46);
+    border-radius: 2px; cursor: pointer;
+    background: rgba(255,190,200,0.07);
+    transition: all 180ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .service-chip-form:hover {
+    background: rgba(255,190,200,0.14);
+    border-color: rgba(220,130,148,0.65);
+    color: rgba(255,225,230,0.95);
+  }
+  /* ── AJUSTE 4: chip SELECIONADO → verde elegante ── */
+  .service-chip-form.selected {
+    background: rgba(34,140,74,0.18);
+    border-color: rgba(52,190,100,0.70);
+    color: rgba(80,230,130,0.95);
+    box-shadow: 0 0 10px rgba(40,180,80,0.12);
+  }
 
-  /* ── Campos de horário ── */
+  /* Campos de horário */
   .form-hint {
-    font-family: var(--font-body); font-size: 11.5px; font-weight: 300;
-    color: rgba(214,154,166,0.72); line-height: 1.55; margin-bottom: 12px;
+    font-family: var(--font-body); font-size: 12px; font-weight: 400;
+    color: rgba(240,200,208,0.80); line-height: 1.6; margin-bottom: 12px;
   }
   .time-opt-rows { display: flex; flex-direction: column; gap: 9px; }
   .time-opt-row  { display: flex; flex-direction: column; gap: 4px; }
-  .time-opt-label { font-family: var(--font-body); font-size: 9px; font-weight: 400; letter-spacing: 0.20em; text-transform: uppercase; color: rgba(214,154,166,0.62); }
-  .time-opt-label .req     { color: rgba(224,106,122,0.82); }
-  .time-opt-label .opt-tag { color: rgba(188,126,138,0.44); font-weight: 300; }
-  .time-error { font-family: var(--font-body); font-size: 11px; font-weight: 300; color: rgba(255,124,138,0.90); margin-top: 5px; min-height: 14px; letter-spacing: 0.01em; }
+  .time-opt-label { font-family: var(--font-body); font-size: 9.5px; font-weight: 600; letter-spacing: 0.20em; text-transform: uppercase; color: rgba(240,200,210,0.72); }
+  .time-opt-label .req     { color: rgba(224,106,122,0.90); }
+  .time-opt-label .opt-tag { color: rgba(200,150,162,0.55); font-weight: 400; }
+  .time-error { font-family: var(--font-body); font-size: 11.5px; font-weight: 500; color: rgba(255,110,125,0.95); margin-top: 5px; min-height: 14px; letter-spacing: 0.01em; }
 
-  /* SUBMIT (inalterado) */
+  /* SUBMIT */
   .submit-btn {
     width: 100%; padding: 16px;
     background: linear-gradient(105deg, #A93A49 0%, #C94A5A 30%, #E06A7A 52%, #C94A5A 72%, #A93A49 100%);
@@ -446,31 +508,38 @@
 <div class="hero-bg"></div>
 <div class="hero-bg-img"></div>
 
+<!--
+  SVG CLIP DEFINITION — não renderiza nada.
+  clipPathUnits="objectBoundingBox": coordenadas 0-1
+  que escalam com a largura/altura do .cover-section.
+
+  Path equivale ao bridge "M 0 0 Q 50 40 100 0" (viewBox 100×20):
+    0.9024  = 185/205  — bridge top nas bordas do cover
+    1.0976  = ctrl-Cy  — calculado para dip exato em y=1.0 (205px)
+-->
+<svg width="0" height="0" aria-hidden="true"
+     style="position:absolute;overflow:hidden;pointer-events:none">
+  <defs>
+    <clipPath id="coverClip" clipPathUnits="objectBoundingBox">
+      <path d="M 0 0 L 1 0 L 1 0.9024 Q 0.5 1.0976 0 0.9024 Z"/>
+    </clipPath>
+  </defs>
+</svg>
+
 <main>
 
-  <!-- COVER — recorte "ponte" em baixo -->
+  <!-- COVER — overflow:hidden + border-radius recorta a imagem na curva -->
   <div class="cover-section anim anim-d1">
+    <!-- Imagem: visível, sem overlay vermelho, recortada pela curva via overflow:hidden -->
     <div class="cover-section-img"></div>
-    <div class="cover-section-overlay"></div>
+    <!-- Vinheta mínima: apenas integra as bordas ao fundo, sem camada de cor -->
+    <div class="cover-section-vignette"></div>
   </div>
 
   <!--
     PROFILE JUNCTION
-    ─────────────────────────────────────────────
-    SVG único, full-width, arco contínuo de ponta a ponta.
-
-    BEZIER QUADRÁTICA: para obter dip real de 20px no centro,
-    o ponto de controle deve estar em y=40 (dobro do dip desejado).
-      y_mid = 0.5 × control_y  →  0.5 × 40 = 20px ✓
-
-    Path L→R: M 0 0 Q 50 40 100 0  (borda esq → dip 20px centro → borda dir)
-    Path R→L: M 100 0 Q 50 40 0 0  (espelho — shimmer converge para o centro)
-
-    Alinhamento com o cover (border-radius dip = 20px):
-      Cover dip nas bordas  = 205 − 20 = 185px (página)
-      Cover dip no centro   =      205px (página)
-      SVG top (junction+46) = 139 + 46  = 185px ✓
-      SVG bot (junction+66) = 139 + 66  = 205px = logo center ✓
+    SVG único, full-width, arco contínuo.
+    A linha bridge-base marca o limite inferior exato do cover.
   -->
   <div class="profile-junction anim anim-d2">
 
@@ -479,11 +548,8 @@
          preserveAspectRatio="none"
          xmlns="http://www.w3.org/2000/svg"
          aria-hidden="true">
-      <!-- Linha base: arco suave de ponta a ponta, dip 20px no centro -->
       <path class="bridge-base"    d="M 0 0 Q 50 40 100 0"/>
-      <!-- Shimmer L→centro (controle em 40 = 2× dip real de 20px) -->
       <path class="bridge-shine-l" d="M 0 0 Q 50 40 100 0"/>
-      <!-- Shimmer R→centro (espelho, converge simultaneamente) -->
       <path class="bridge-shine-r" d="M 100 0 Q 50 40 0 0"/>
     </svg>
 
@@ -514,7 +580,7 @@
     <div class="divider-line" style="background:linear-gradient(90deg,rgba(60,10,20,0.2),rgba(180,60,80,0.5))"></div>
   </div>
 
-  <!-- BOTÕES (inalterado) -->
+  <!-- BOTÕES -->
   <div class="professionals anim anim-d5">
 
     <a class="insta-btn" href="https://instagram.com/atelierdasmaos" target="_blank" rel="noopener" aria-label="Instagram">
@@ -649,7 +715,7 @@
       <input class="form-input" id="serviceInput" type="text" placeholder="Ou descreva aqui..." style="margin-top:0">
     </div>
 
-    <!-- ── HORÁRIOS — 3 campos com validação ── -->
+    <!-- Horários -->
     <div class="form-field">
       <label class="form-label">Datas e horários de preferência</label>
       <p class="form-hint">
@@ -713,12 +779,10 @@
   }
 
   function selectChip(el) {
+    // AJUSTE 4: apenas alterna verde no chip — sem texto separado
     el.classList.toggle('selected');
-    const sel = [...document.querySelectorAll('.service-chip-form.selected')].map(c => c.textContent).join(', ');
-    document.getElementById('serviceInput').value = sel;
   }
 
-  /* Auto-formata enquanto digita: DD/MM/AAAA - HHh */
   function autoFormatDT(input) {
     const cur = input.selectionStart;
     const digits = input.value.replace(/\D/g, '').slice(0, 12);
@@ -736,7 +800,6 @@
     input.value = out;
   }
 
-  /* Valida o formato DD/MM/AAAA - HHh (aceita variações com ou sem o h final) */
   function parseDT(str) {
     if (!str) return null;
     const m = str.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})\s*[-–]\s*(\d{1,2})\s*h?$/i);
@@ -762,7 +825,6 @@
     const p3 = v3 ? parseDT(v3) : null;
     if (v3 && !p3) return show('3ª opção inválida. Use: DD/MM/AAAA - HHh  (ex: 03/05/2026 - 10h)');
 
-    /* Horários duplicados (mesma data + mesma hora) */
     if (p1.key === p2.key) return show('1ª e 2ª opção não podem ter o mesmo horário.');
     if (p3 && p1.key === p3.key) return show('1ª e 3ª opção não podem ter o mesmo horário.');
     if (p3 && p2.key === p3.key) return show('2ª e 3ª opção não podem ter o mesmo horário.');
@@ -776,7 +838,10 @@
     if (!times) return;
 
     const name    = document.getElementById('clientName').value.trim();
-    const service = document.getElementById('serviceInput').value.trim();
+    // Lê chips selecionados + campo manual (combinados)
+    const chipsSel = [...document.querySelectorAll('.service-chip-form.selected')].map(c => c.textContent.trim()).join(', ');
+    const serviceManual = document.getElementById('serviceInput').value.trim();
+    const service = [chipsSel, serviceManual].filter(Boolean).join(' + ');
     const notes   = document.getElementById('notes').value.trim();
 
     let msg = `Olá, ${names[currentPro]}! 🌸\n\nGostaria de agendar um horário.`;
