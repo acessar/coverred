@@ -77,18 +77,19 @@
     background: linear-gradient(170deg, #621020 0%, #7A2030 40%, #621020 100%);
     transform: translateY(100%);
     transition: transform 400ms var(--ease-out);
-    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    overflow: hidden;
   }
   #bookingScreen.visible {
     transform: translateY(0);
   }
 
   .booking-topbar {
-    position: sticky; top: 0; z-index: 10;
+    position: relative; z-index: 10;
     background: linear-gradient(180deg, #4A1020 0%, rgba(74,16,32,0.96) 80%, rgba(74,16,32,0) 100%);
     padding: 16px 20px 20px;
     display: flex; align-items: center; gap: 14px;
     backdrop-filter: blur(8px);
+    flex-shrink: 0;
   }
   .back-btn {
     display: flex; align-items: center; gap: 10px;
@@ -115,212 +116,86 @@
     color: var(--off-white); flex: 1;
   }
 
-  .booking-body {
+  /* ─── STEP PROGRESS BAR ─── */
+  .step-progress {
+    display: flex; align-items: center; gap: 0;
+    padding: 0 20px 16px;
+    flex-shrink: 0;
+  }
+  .step-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-body); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.04em;
+    background: rgba(169,58,73,0.18);
+    border: 1.5px solid rgba(245,214,218,0.28);
+    color: rgba(245,214,218,0.55);
+    transition: background 300ms var(--ease-out), border-color 300ms var(--ease-out), color 300ms var(--ease-out), box-shadow 300ms var(--ease-out);
+    flex-shrink: 0;
+  }
+  .step-dot.active {
+    background: var(--primary);
+    border-color: var(--primary-glow);
+    color: #FFFFFF;
+    box-shadow: 0 0 12px rgba(201,74,90,0.40);
+  }
+  .step-dot.done {
+    background: #1A7A3C;
+    border-color: #22A050;
+    color: #FFFFFF;
+  }
+  .step-line {
+    flex: 1; height: 1.5px;
+    background: rgba(245,214,218,0.18);
+    position: relative; overflow: hidden;
+  }
+  .step-line-fill {
+    position: absolute; top: 0; left: 0; height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-glow));
+    transition: width 400ms var(--ease-out);
+  }
+  .step-line-fill.filled { width: 100%; }
+
+  /* ─── STEPS CONTAINER ─── */
+  .steps-viewport {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  .steps-track {
+    display: flex;
+    width: 300%; /* 3 steps */
+    height: 100%;
+    transition: transform 380ms var(--ease-out);
+  }
+  .step-panel {
+    width: calc(100% / 3);
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 4px 20px 40px;
-    max-width: 520px; margin: 0 auto; width: 100%;
+    display: flex; flex-direction: column;
   }
 
-  .booking-header {
-    padding: 8px 0 20px;
+  /* ─── STEP HEADER ─── */
+  .step-header {
+    padding: 8px 0 24px;
     border-bottom: 1px solid rgba(201,74,90,0.25);
     margin-bottom: 24px;
+    flex-shrink: 0;
   }
-  .booking-title {
-    font-family: var(--font-display); font-size: 32px; font-weight: 300;
-    font-style: italic; color: var(--off-white); line-height: 1.15;
+  .step-title {
+    font-family: var(--font-display); font-size: 28px; font-weight: 300;
+    font-style: italic; color: var(--off-white); line-height: 1.2;
   }
-  .booking-title strong {
-    font-style: normal; font-weight: 600; display: block; font-size: 36px;
+  .step-title strong {
+    font-style: normal; font-weight: 600; display: block; font-size: 32px; line-height: 1.1;
   }
   .booking-for {
     font-family: var(--font-body); font-size: 11px; font-weight: 500;
     letter-spacing: 0.18em; text-transform: uppercase;
     color: rgba(245,214,218,0.90); margin-top: 8px;
   }
-
-  /* ─── COVER ─── */
-  .cover-section {
-    position: relative;
-    height: 205px;
-    margin-left: -20px; margin-right: -20px;
-    flex-shrink: 0;
-    clip-path: url(#coverClip);
-    overflow: hidden;
-  }
-  .cover-section-img {
-    position: absolute; inset: 0;
-    background-image: url('https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1200&q=80');
-    background-size: cover; background-position: center center; opacity: 0.82;
-  }
-  .cover-section-vignette {
-    position: absolute; inset: 0;
-    background: linear-gradient(to bottom, rgba(98,16,32,0.18) 0%, rgba(74,16,32,0.08) 40%, rgba(50,12,20,0.52) 100%);
-    pointer-events: none;
-  }
-
-  .profile-junction {
-    position: relative; height: var(--logo-size);
-    margin-top: calc(-1 * var(--logo-half)); flex-shrink: 0; z-index: 2;
-  }
-  .bridge-svg {
-    position: absolute; top: var(--arc-top-offset); left: -20px;
-    width: calc(100% + 40px); height: var(--arc-depth); display: block; overflow: visible;
-  }
-  .bridge-base { fill: none; stroke: rgba(201,74,90,0.45); stroke-width: 0.9; vector-effect: non-scaling-stroke; }
-  .bridge-shine-l, .bridge-shine-r {
-    fill: none; stroke: rgba(224,106,122,0.82); stroke-width: 1.5; stroke-linecap: round;
-    stroke-dasharray: 28 300; stroke-dashoffset: 328; vector-effect: non-scaling-stroke;
-  }
-  .bridge-shine-l { animation: bridge-shimmer 5s ease-in-out infinite; }
-  .bridge-shine-r { animation: bridge-shimmer 5s ease-in-out infinite; }
-  @keyframes bridge-shimmer {
-    0%,5%   { stroke-dashoffset: 328; opacity: 0; }
-    11%     { opacity: 1; }
-    64%     { opacity: 0.86; stroke-dashoffset: -28; }
-    74%,100%{ stroke-dashoffset: -28; opacity: 0; }
-  }
-  .profile-logo-circle {
-    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-    width: var(--logo-size); height: var(--logo-size); border-radius: 50%;
-    background: radial-gradient(circle at 38% 34%, #7A2030 0%, #621020 52%, #4A0C18 100%);
-    border: 2.5px solid rgba(201,74,90,0.65);
-    box-shadow: 0 0 0 1.5px rgba(74,12,24,0.92), 0 8px 36px rgba(40,8,16,0.72), 0 0 32px rgba(201,74,90,0.16), inset 0 1px 0 rgba(253,240,241,0.12), inset 0 -1px 0 rgba(20,6,10,0.30);
-    display: flex; align-items: center; justify-content: center; z-index: 3;
-  }
-  .profile-logo-circle::after {
-    content: ''; position: absolute; inset: -1px; border-radius: 50%;
-    background: radial-gradient(circle at 38% 22%, rgba(253,240,241,0.13) 0%, transparent 58%);
-    pointer-events: none;
-  }
-
-  .profile-identity-text { text-align: center; padding: 18px 0 0; margin-bottom: 6px; flex-shrink: 0; }
-  .profile-studio-name {
-    font-family: var(--font-display); font-size: 28px; font-weight: 600;
-    font-style: italic; color: var(--off-white); letter-spacing: 0.04em; line-height: 1; margin-bottom: 9px;
-  }
-  .profile-tagline {
-    font-family: var(--font-body); font-size: 14px; font-weight: 400;
-    line-height: 1.65; color: #FFFFFF; letter-spacing: 0.02em;
-  }
-  .profile-tagline em { font-style: normal; color: var(--off-white); font-weight: 500; }
-
-  /* ─── DIVIDER ─── */
-  .section-divider { display: flex; align-items: center; gap: 14px; margin: 28px 0; }
-  .divider-line {
-    flex: 1; height: 1px;
-    background: linear-gradient(90deg, rgba(201,74,90,0.6), rgba(98,16,32,0.2));
-    position: relative; overflow: hidden;
-  }
-  .divider-diamond {
-    width: 5px; height: 5px; background: var(--primary-glow);
-    transform: rotate(45deg); opacity: 0.7; flex-shrink: 0;
-    animation: diamond-pulse 5s ease-in-out infinite;
-  }
-  .section-divider > .divider-line:nth-child(1)::after {
-    content: ''; position: absolute; top: 0; left: 0; width: 42%; height: 100%;
-    background: linear-gradient(90deg, transparent 0%, rgba(224,106,122,0.55) 45%, rgba(232,160,170,0.75) 50%, rgba(224,106,122,0.55) 55%, transparent 100%);
-    animation: shine-to-right 5s ease-in-out infinite;
-  }
-  .section-divider > .divider-line:nth-child(3)::after {
-    content: ''; position: absolute; top: 0; right: 0; left: auto; width: 42%; height: 100%;
-    background: linear-gradient(90deg, transparent 0%, rgba(224,106,122,0.55) 45%, rgba(232,160,170,0.75) 50%, rgba(224,106,122,0.55) 55%, transparent 100%);
-    animation: shine-to-left 5s ease-in-out infinite;
-  }
-  @keyframes shine-to-right {
-    0%        { transform: translateX(-140%); opacity: 0; }
-    8%        { opacity: 1; }
-    62%       { opacity: 0.85; transform: translateX(260%); }
-    70%, 100% { transform: translateX(260%); opacity: 0; }
-  }
-  @keyframes shine-to-left {
-    0%        { transform: translateX(140%); opacity: 0; }
-    8%        { opacity: 1; }
-    62%       { opacity: 0.85; transform: translateX(-260%); }
-    70%, 100% { transform: translateX(-260%); opacity: 0; }
-  }
-  @keyframes diamond-pulse {
-    0%,52%  { opacity: 0.7; transform: rotate(45deg) scale(1); }
-    65%     { opacity: 1; transform: rotate(45deg) scale(1.45); filter: brightness(1.5); }
-    78%     { opacity: 0.88; transform: rotate(45deg) scale(1.10); filter: brightness(1.15); }
-    92%,100%{ opacity: 0.7; transform: rotate(45deg) scale(1); filter: brightness(1); }
-  }
-
-  /* ─── PROFESSIONALS ─── */
-  .professionals { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
-  .pro-btn {
-    position: relative; display: flex; align-items: center; gap: 16px;
-    padding: 0 20px 0 0;
-    background: linear-gradient(180deg, #E06A7A 0%, #C94A5A 52%, #A93A49 100%);
-    border: 1px solid rgba(253,240,241,0.32); border-radius: 4px;
-    cursor: pointer; overflow: hidden; text-decoration: none; height: 72px;
-    transition: transform 80ms var(--ease-out), box-shadow 120ms var(--ease-out);
-    -webkit-tap-highlight-color: transparent;
-    box-shadow: 0 2px 18px rgba(201,74,90,0.40), inset 0 1px 0 rgba(253,240,241,0.18);
-  }
-  .pro-btn::before {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(253,240,241,0.22) 0%, rgba(245,214,218,0.08) 38%, transparent 68%);
-    opacity: 0.75; transition: opacity 380ms var(--ease-out); pointer-events: none;
-  }
-  .pro-btn::after {
-    content: ''; position: absolute; top: 0; left: -90%; width: 55%; height: 100%;
-    background: linear-gradient(102deg, transparent 0%, rgba(253,240,241,0.10) 30%, rgba(253,240,241,0.24) 50%, rgba(253,240,241,0.10) 70%, transparent 100%);
-    transform: skewX(-10deg); animation: gold-shimmer 7s cubic-bezier(0.4,0,0.6,1) infinite;
-    opacity: 0.70; transition: opacity 400ms var(--ease-out); pointer-events: none;
-  }
-  .pro-btn:hover::before { opacity: 1; }
-  .pro-btn:hover::after  { opacity: 1; animation-duration: 4.5s; }
-  .pro-btn:hover         { border-color: rgba(253,240,241,0.54); }
-  .pro-btn:active { transform: scale(0.976); box-shadow: 0 1px 8px rgba(122,32,48,0.24), inset 0 2px 6px rgba(100,24,40,0.15); }
-  .pro-btn .glow-ring {
-    position: absolute; inset: -2px; border-radius: 6px;
-    border: 1.5px solid rgba(232,160,170,0.0); box-shadow: 0 0 0 0 rgba(201,74,90,0);
-    transition: border-color 350ms var(--ease-out), box-shadow 350ms var(--ease-out); pointer-events: none;
-  }
-  .pro-btn:hover .glow-ring { border-color: rgba(232,160,170,0.34); box-shadow: 0 0 18px rgba(201,74,90,0.24); }
-  .pro-avatar-placeholder {
-    width: 52px; height: 52px; border-radius: 50%;
-    background: linear-gradient(135deg, rgba(232,160,170,0.18), rgba(169,58,73,0.30));
-    border: 1.5px solid rgba(245,214,218,0.30);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 4px;
-  }
-  .pro-avatar-placeholder span { font-family: var(--font-display); font-size: 20px; font-weight: 400; color: rgba(253,240,241,0.88); font-style: italic; }
-  .pro-info { flex: 1; text-align: left; }
-  .pro-role { font-family: var(--font-body); font-size: 9.5px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: #FFFFFF; margin-bottom: 3px; }
-  .pro-name { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: #FFFFFF; letter-spacing: 0.01em; line-height: 1; margin-bottom: 3px; }
-  .pro-action { font-family: var(--font-body); font-size: 11px; font-weight: 500; color: #FFFFFF; letter-spacing: 0.04em; }
-  .pro-arrow { flex-shrink: 0; opacity: 0.55; transition: opacity 200ms, transform 200ms; }
-  .pro-btn:hover .pro-arrow { opacity: 0.90; transform: translateX(2px); }
-
-  .insta-btn {
-    position: relative; display: flex; align-items: center; gap: 14px; padding: 0 20px;
-    background: linear-gradient(135deg, #833AB4 0%, #C13584 45%, #E1306C 75%, #F77737 100%);
-    border: none; border-radius: 4px; cursor: pointer; overflow: hidden;
-    text-decoration: none; height: 56px; width: 100%;
-    transition: transform 80ms var(--ease-out); -webkit-tap-highlight-color: transparent;
-    box-shadow: 0 2px 16px rgba(193,53,132,0.35), inset 0 1px 0 rgba(255,255,255,0.1);
-    margin-bottom: 16px;
-  }
-  .insta-btn::before {
-    content: ''; position: absolute; inset: 0;
-    background: radial-gradient(ellipse 120% 120% at 50% -20%, rgba(255,255,255,0.12) 0%, transparent 60%);
-    opacity: 0; transition: opacity 300ms var(--ease-out);
-  }
-  .insta-btn:active { transform: scale(0.976); }
-  .insta-btn:hover::before { opacity: 1; }
-  .insta-btn .insta-btn-glow {
-    position: absolute; inset: -2px; border-radius: 6px; border: 1.5px solid rgba(255,160,200,0.0);
-    transition: border-color 350ms var(--ease-out), box-shadow 350ms var(--ease-out); pointer-events: none;
-  }
-  .insta-btn:hover .insta-btn-glow { border-color: rgba(255,160,200,0.22); box-shadow: 0 0 18px rgba(193,53,132,0.2); }
-  .insta-label { flex: 1; text-align: left; }
-  .insta-role { font-family: var(--font-body); font-size: 9.5px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,240,250,0.80); margin-bottom: 2px; }
-  .insta-name { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: rgba(255,240,250,0.95); letter-spacing: 0.06em; }
-
-  footer { padding: 16px 0 28px; display: flex; align-items: center; justify-content: space-between; opacity: 0.38; }
-  .footer-text { font-size: 9px; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase; color: var(--parchment); }
-  .footer-ornament { display: flex; gap: 4px; align-items: center; }
-  .footer-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--primary-glow); }
 
   /* ─── FORM ELEMENTS ─── */
   .form-section { margin-bottom: 20px; }
@@ -403,7 +278,6 @@
   .datetime-row .date-input { flex: 3; }
   .datetime-row .time-input { flex: 2; }
 
-  /* prevent manual input — readonly style */
   .form-input[readonly] { cursor: pointer; user-select: none; }
   .form-input[readonly]:focus { border-color: #C94A5A; box-shadow: 0 0 0 3px rgba(201,74,90,0.15); }
 
@@ -415,6 +289,10 @@
     border-color: rgba(220,70,90,0.80) !important;
     box-shadow: 0 0 0 3px rgba(220,70,90,0.12) !important;
   }
+  .name-error {
+    font-family: var(--font-body); font-size: 12px; font-weight: 600;
+    color: #FF6B7A; margin-top: 6px; min-height: 16px; letter-spacing: 0.01em;
+  }
 
   .form-hint {
     font-family: var(--font-body); font-size: 12px; font-weight: 500;
@@ -422,7 +300,26 @@
   }
   .form-hint .hint-req { color: var(--primary-glow); font-weight: 700; }
 
-  /* ─── SUBMIT BTN ─── */
+  /* ─── NAV BUTTONS ─── */
+  .step-nav { margin-top: auto; padding-top: 24px; }
+
+  .continue-btn {
+    width: 100%; padding: 16px;
+    background: linear-gradient(105deg, #A93A49 0%, #C94A5A 30%, #E06A7A 52%, #C94A5A 72%, #A93A49 100%);
+    background-size: 250% 100%; background-position: 100% 0;
+    border: 1px solid rgba(253,240,241,0.32); border-radius: 4px;
+    font-family: var(--font-body); font-size: 12px; font-weight: 600; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #FFFFFF; cursor: pointer;
+    transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out), background-position 600ms ease-in-out;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 4px 20px rgba(201,74,90,0.44); -webkit-tap-highlight-color: transparent;
+    position: relative; overflow: hidden;
+  }
+  .continue-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(253,240,241,0.20) 0%, rgba(245,214,218,0.07) 38%, transparent 68%); opacity: 0.75; transition: opacity 300ms var(--ease-out); pointer-events: none; }
+  .continue-btn::after  { content: ''; position: absolute; top: 0; left: -90%; width: 55%; height: 100%; background: linear-gradient(102deg, transparent 0%, rgba(253,240,241,0.10) 30%, rgba(253,240,241,0.22) 50%, rgba(253,240,241,0.10) 70%, transparent 100%); transform: skewX(-10deg); animation: gold-shimmer 7s cubic-bezier(0.4,0,0.6,1) infinite; animation-delay: 1.5s; opacity: 0.65; pointer-events: none; }
+  .continue-btn:active { transform: scale(0.982); }
+  .continue-btn:hover  { border-color: rgba(253,240,241,0.54); box-shadow: 0 4px 24px rgba(224,106,122,0.55); background-position: 0% 0; }
+
   .submit-btn {
     width: 100%; padding: 16px;
     background: linear-gradient(105deg, #A93A49 0%, #C94A5A 30%, #E06A7A 52%, #C94A5A 72%, #A93A49 100%);
@@ -436,11 +333,193 @@
     position: relative; overflow: hidden;
   }
   .submit-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(253,240,241,0.20) 0%, rgba(245,214,218,0.07) 38%, transparent 68%); opacity: 0.75; transition: opacity 300ms var(--ease-out); pointer-events: none; }
-  .submit-btn::after { content: ''; position: absolute; top: 0; left: -90%; width: 55%; height: 100%; background: linear-gradient(102deg, transparent 0%, rgba(253,240,241,0.10) 30%, rgba(253,240,241,0.22) 50%, rgba(253,240,241,0.10) 70%, transparent 100%); transform: skewX(-10deg); animation: gold-shimmer 7s cubic-bezier(0.4,0,0.6,1) infinite; animation-delay: 1.5s; opacity: 0.65; transition: opacity 400ms var(--ease-out); pointer-events: none; }
+  .submit-btn::after  { content: ''; position: absolute; top: 0; left: -90%; width: 55%; height: 100%; background: linear-gradient(102deg, transparent 0%, rgba(253,240,241,0.10) 30%, rgba(253,240,241,0.22) 50%, rgba(253,240,241,0.10) 70%, transparent 100%); transform: skewX(-10deg); animation: gold-shimmer 7s cubic-bezier(0.4,0,0.6,1) infinite; animation-delay: 1.5s; opacity: 0.65; pointer-events: none; }
   .submit-btn:active { transform: scale(0.982); }
-  .submit-btn:hover { border-color: rgba(253,240,241,0.54); box-shadow: 0 4px 24px rgba(224,106,122,0.55); background-position: 0% 0; }
+  .submit-btn:hover  { border-color: rgba(253,240,241,0.54); box-shadow: 0 4px 24px rgba(224,106,122,0.55); background-position: 0% 0; }
 
   @keyframes gold-shimmer { 0%,22% { left: -90%; } 72%,100% { left: 180%; } }
+
+  /* ─── HOME ELEMENTS ─── */
+  .cover-section {
+    position: relative; height: 205px;
+    margin-left: -20px; margin-right: -20px;
+    flex-shrink: 0;
+    clip-path: url(#coverClip);
+    overflow: hidden;
+  }
+  .cover-section-img {
+    position: absolute; inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1604654894610-df63bc536371?w=1200&q=80');
+    background-size: cover; background-position: center center; opacity: 0.82;
+  }
+  .cover-section-vignette {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(98,16,32,0.18) 0%, rgba(74,16,32,0.08) 40%, rgba(50,12,20,0.52) 100%);
+    pointer-events: none;
+  }
+
+  .profile-junction {
+    position: relative; height: var(--logo-size);
+    margin-top: calc(-1 * var(--logo-half)); flex-shrink: 0; z-index: 2;
+  }
+  .bridge-svg {
+    position: absolute; top: var(--arc-top-offset); left: -20px;
+    width: calc(100% + 40px); height: var(--arc-depth); display: block; overflow: visible;
+  }
+  .bridge-base { fill: none; stroke: rgba(201,74,90,0.45); stroke-width: 0.9; vector-effect: non-scaling-stroke; }
+  .bridge-shine-l, .bridge-shine-r {
+    fill: none; stroke: rgba(224,106,122,0.82); stroke-width: 1.5; stroke-linecap: round;
+    stroke-dasharray: 28 300; stroke-dashoffset: 328; vector-effect: non-scaling-stroke;
+  }
+  .bridge-shine-l { animation: bridge-shimmer 5s ease-in-out infinite; }
+  .bridge-shine-r { animation: bridge-shimmer 5s ease-in-out infinite; }
+  @keyframes bridge-shimmer {
+    0%,5%   { stroke-dashoffset: 328; opacity: 0; }
+    11%     { opacity: 1; }
+    64%     { opacity: 0.86; stroke-dashoffset: -28; }
+    74%,100%{ stroke-dashoffset: -28; opacity: 0; }
+  }
+  .profile-logo-circle {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: var(--logo-size); height: var(--logo-size); border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, #7A2030 0%, #621020 52%, #4A0C18 100%);
+    border: 2.5px solid rgba(201,74,90,0.65);
+    box-shadow: 0 0 0 1.5px rgba(74,12,24,0.92), 0 8px 36px rgba(40,8,16,0.72), 0 0 32px rgba(201,74,90,0.16), inset 0 1px 0 rgba(253,240,241,0.12), inset 0 -1px 0 rgba(20,6,10,0.30);
+    display: flex; align-items: center; justify-content: center; z-index: 3;
+  }
+  .profile-logo-circle::after {
+    content: ''; position: absolute; inset: -1px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 22%, rgba(253,240,241,0.13) 0%, transparent 58%);
+    pointer-events: none;
+  }
+
+  .profile-identity-text { text-align: center; padding: 18px 0 0; margin-bottom: 6px; flex-shrink: 0; }
+  .profile-studio-name {
+    font-family: var(--font-display); font-size: 28px; font-weight: 600;
+    font-style: italic; color: var(--off-white); letter-spacing: 0.04em; line-height: 1; margin-bottom: 9px;
+  }
+  .profile-tagline {
+    font-family: var(--font-body); font-size: 14px; font-weight: 400;
+    line-height: 1.65; color: #FFFFFF; letter-spacing: 0.02em;
+  }
+  .profile-tagline em { font-style: normal; color: var(--off-white); font-weight: 500; }
+
+  .section-divider { display: flex; align-items: center; gap: 14px; margin: 28px 0; }
+  .divider-line {
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, rgba(201,74,90,0.6), rgba(98,16,32,0.2));
+    position: relative; overflow: hidden;
+  }
+  .divider-diamond {
+    width: 5px; height: 5px; background: var(--primary-glow);
+    transform: rotate(45deg); opacity: 0.7; flex-shrink: 0;
+    animation: diamond-pulse 5s ease-in-out infinite;
+  }
+  .section-divider > .divider-line:nth-child(1)::after {
+    content: ''; position: absolute; top: 0; left: 0; width: 42%; height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(224,106,122,0.55) 45%, rgba(232,160,170,0.75) 50%, rgba(224,106,122,0.55) 55%, transparent 100%);
+    animation: shine-to-right 5s ease-in-out infinite;
+  }
+  .section-divider > .divider-line:nth-child(3)::after {
+    content: ''; position: absolute; top: 0; right: 0; left: auto; width: 42%; height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(224,106,122,0.55) 45%, rgba(232,160,170,0.75) 50%, rgba(224,106,122,0.55) 55%, transparent 100%);
+    animation: shine-to-left 5s ease-in-out infinite;
+  }
+  @keyframes shine-to-right {
+    0%        { transform: translateX(-140%); opacity: 0; }
+    8%        { opacity: 1; }
+    62%       { opacity: 0.85; transform: translateX(260%); }
+    70%, 100% { transform: translateX(260%); opacity: 0; }
+  }
+  @keyframes shine-to-left {
+    0%        { transform: translateX(140%); opacity: 0; }
+    8%        { opacity: 1; }
+    62%       { opacity: 0.85; transform: translateX(-260%); }
+    70%, 100% { transform: translateX(-260%); opacity: 0; }
+  }
+  @keyframes diamond-pulse {
+    0%,52%  { opacity: 0.7; transform: rotate(45deg) scale(1); }
+    65%     { opacity: 1; transform: rotate(45deg) scale(1.45); filter: brightness(1.5); }
+    78%     { opacity: 0.88; transform: rotate(45deg) scale(1.10); filter: brightness(1.15); }
+    92%,100%{ opacity: 0.7; transform: rotate(45deg) scale(1); filter: brightness(1); }
+  }
+
+  .professionals { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+  .pro-btn {
+    position: relative; display: flex; align-items: center; gap: 16px;
+    padding: 0 20px 0 0;
+    background: linear-gradient(180deg, #E06A7A 0%, #C94A5A 52%, #A93A49 100%);
+    border: 1px solid rgba(253,240,241,0.32); border-radius: 4px;
+    cursor: pointer; overflow: hidden; text-decoration: none; height: 72px;
+    transition: transform 80ms var(--ease-out), box-shadow 120ms var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 2px 18px rgba(201,74,90,0.40), inset 0 1px 0 rgba(253,240,241,0.18);
+  }
+  .pro-btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(253,240,241,0.22) 0%, rgba(245,214,218,0.08) 38%, transparent 68%);
+    opacity: 0.75; transition: opacity 380ms var(--ease-out); pointer-events: none;
+  }
+  .pro-btn::after {
+    content: ''; position: absolute; top: 0; left: -90%; width: 55%; height: 100%;
+    background: linear-gradient(102deg, transparent 0%, rgba(253,240,241,0.10) 30%, rgba(253,240,241,0.24) 50%, rgba(253,240,241,0.10) 70%, transparent 100%);
+    transform: skewX(-10deg); animation: gold-shimmer 7s cubic-bezier(0.4,0,0.6,1) infinite;
+    opacity: 0.70; transition: opacity 400ms var(--ease-out); pointer-events: none;
+  }
+  .pro-btn:hover::before { opacity: 1; }
+  .pro-btn:hover::after  { opacity: 1; animation-duration: 4.5s; }
+  .pro-btn:hover         { border-color: rgba(253,240,241,0.54); }
+  .pro-btn:active { transform: scale(0.976); box-shadow: 0 1px 8px rgba(122,32,48,0.24), inset 0 2px 6px rgba(100,24,40,0.15); }
+  .pro-btn .glow-ring {
+    position: absolute; inset: -2px; border-radius: 6px;
+    border: 1.5px solid rgba(232,160,170,0.0); box-shadow: 0 0 0 0 rgba(201,74,90,0);
+    transition: border-color 350ms var(--ease-out), box-shadow 350ms var(--ease-out); pointer-events: none;
+  }
+  .pro-btn:hover .glow-ring { border-color: rgba(232,160,170,0.34); box-shadow: 0 0 18px rgba(201,74,90,0.24); }
+  .pro-avatar-placeholder {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(232,160,170,0.18), rgba(169,58,73,0.30));
+    border: 1.5px solid rgba(245,214,218,0.30);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 4px;
+  }
+  .pro-avatar-placeholder span { font-family: var(--font-display); font-size: 20px; font-weight: 400; color: rgba(253,240,241,0.88); font-style: italic; }
+  .pro-info { flex: 1; text-align: left; }
+  .pro-role { font-family: var(--font-body); font-size: 9.5px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: #FFFFFF; margin-bottom: 3px; }
+  .pro-name { font-family: var(--font-display); font-size: 22px; font-weight: 600; color: #FFFFFF; letter-spacing: 0.01em; line-height: 1; margin-bottom: 3px; }
+  .pro-action { font-family: var(--font-body); font-size: 11px; font-weight: 500; color: #FFFFFF; letter-spacing: 0.04em; }
+  .pro-arrow { flex-shrink: 0; opacity: 0.55; transition: opacity 200ms, transform 200ms; }
+  .pro-btn:hover .pro-arrow { opacity: 0.90; transform: translateX(2px); }
+
+  .insta-btn {
+    position: relative; display: flex; align-items: center; gap: 14px; padding: 0 20px;
+    background: linear-gradient(135deg, #833AB4 0%, #C13584 45%, #E1306C 75%, #F77737 100%);
+    border: none; border-radius: 4px; cursor: pointer; overflow: hidden;
+    text-decoration: none; height: 56px; width: 100%;
+    transition: transform 80ms var(--ease-out); -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 2px 16px rgba(193,53,132,0.35), inset 0 1px 0 rgba(255,255,255,0.1);
+    margin-bottom: 16px;
+  }
+  .insta-btn::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 120% 120% at 50% -20%, rgba(255,255,255,0.12) 0%, transparent 60%);
+    opacity: 0; transition: opacity 300ms var(--ease-out);
+  }
+  .insta-btn:active { transform: scale(0.976); }
+  .insta-btn:hover::before { opacity: 1; }
+  .insta-btn .insta-btn-glow {
+    position: absolute; inset: -2px; border-radius: 6px; border: 1.5px solid rgba(255,160,200,0.0);
+    transition: border-color 350ms var(--ease-out), box-shadow 350ms var(--ease-out); pointer-events: none;
+  }
+  .insta-btn:hover .insta-btn-glow { border-color: rgba(255,160,200,0.22); box-shadow: 0 0 18px rgba(193,53,132,0.2); }
+  .insta-label { flex: 1; text-align: left; }
+  .insta-role { font-family: var(--font-body); font-size: 9.5px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,240,250,0.80); margin-bottom: 2px; }
+  .insta-name { font-family: var(--font-body); font-size: 14px; font-weight: 500; color: rgba(255,240,250,0.95); letter-spacing: 0.06em; }
+
+  footer { padding: 16px 0 28px; display: flex; align-items: center; justify-content: space-between; opacity: 0.38; }
+  .footer-text { font-size: 9px; font-weight: 400; letter-spacing: 0.16em; text-transform: uppercase; color: var(--parchment); }
+  .footer-ornament { display: flex; gap: 4px; align-items: center; }
+  .footer-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--primary-glow); }
+
   @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
   .anim    { animation: fadeUp 600ms var(--ease-out) both; }
   .anim-d1 { animation-delay:  60ms; }
@@ -487,7 +566,6 @@
     margin-bottom: 0;
   }
 
-  /* Calendar */
   .cal-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 14px 20px 8px;
@@ -536,7 +614,6 @@
     font-weight: 700;
   }
 
-  /* Time list */
   .time-list {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 12px 16px 4px;
   }
@@ -554,6 +631,8 @@
   .time-slot.selected {
     background: #C94A5A; border-color: #E06A7A; color: #FFFFFF; font-weight: 700;
   }
+
+  .time-error { font-family: var(--font-body); font-size: 12px; font-weight: 600; color: #FF6B7A; margin-top: 6px; min-height: 16px; letter-spacing: 0.01em; }
 
   @media (max-width: 340px) {
     .datetime-row { flex-direction: column; }
@@ -671,115 +750,173 @@
 <!-- ═══════════════ BOOKING SCREEN ═══════════════ -->
 <div id="bookingScreen" aria-modal="true" role="dialog" aria-label="Agendamento">
 
+  <!-- Top bar -->
   <div class="booking-topbar">
-    <button class="back-btn" onclick="closeBooking()" aria-label="Voltar para a página inicial">
+    <button class="back-btn" onclick="handleBack()" aria-label="Voltar">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
         <path d="M11 3L5 9L11 15" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       Voltar
     </button>
-    <div class="booking-topbar-title">Agendamento</div>
+    <div class="booking-topbar-title" id="topbarTitle">Agendamento</div>
   </div>
 
-  <div class="booking-body">
-
-    <div class="booking-header">
-      <div class="booking-title">Agendar<br><strong>Horário</strong></div>
-      <div class="booking-for" id="bookingFor">com Letícia</div>
-    </div>
-
-    <!-- Nome -->
-    <div class="form-section">
-      <label class="form-label" for="clientName">Seu nome</label>
-      <input class="form-input" id="clientName" type="text" placeholder="Como prefere ser chamada?" autocomplete="given-name">
-    </div>
-
-    <!-- Serviços -->
-    <div class="form-section">
-      <label class="form-label">Serviço desejado</label>
-      <div class="service-chips-form" id="serviceChips">
-        <button class="service-chip-form" onclick="toggleChip(this)" type="button">
-          <span class="chip-label">Unhas em Gel</span><span class="chip-remove">✕</span>
-        </button>
-        <button class="service-chip-form" onclick="toggleChip(this)" type="button">
-          <span class="chip-label">Fibra de Vidro</span><span class="chip-remove">✕</span>
-        </button>
-        <button class="service-chip-form" onclick="toggleChip(this)" type="button">
-          <span class="chip-label">Manutenção</span><span class="chip-remove">✕</span>
-        </button>
-        <button class="service-chip-form" onclick="toggleChip(this)" type="button">
-          <span class="chip-label">Nail Art</span><span class="chip-remove">✕</span>
-        </button>
-        <button class="service-chip-form" onclick="toggleChip(this)" type="button">
-          <span class="chip-label">Esmaltação</span><span class="chip-remove">✕</span>
-        </button>
-        <button class="service-chip-form" onclick="toggleChip(this)" type="button">
-          <span class="chip-label">Remoção</span><span class="chip-remove">✕</span>
-        </button>
-        <button class="service-chip-form" onclick="toggleChip(this)" type="button">
-          <span class="chip-label">Cutículas</span><span class="chip-remove">✕</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Datas e horários -->
-    <div class="form-section">
-      <label class="form-label">Datas e horários de preferência</label>
-      <p class="form-hint">
-        Informe até 3 opções — apenas a 1ª é <span class="hint-req">obrigatória</span>.<br>
-        Toque para escolher data e horário.
-      </p>
-      <div class="time-opt-rows">
-
-        <div class="time-opt-row">
-          <span class="time-opt-label">1ª opção <span class="req">*</span></span>
-          <div class="datetime-row">
-            <input class="form-input date-input" id="date1" readonly placeholder="Clique para escolher a data"
-                   onclick="openDatePicker(1)" aria-label="Data da 1ª opção">
-            <input class="form-input time-input" id="time1" readonly placeholder="Clique para escolher o horário"
-                   onclick="openTimePicker(1)" aria-label="Horário da 1ª opção">
-          </div>
-        </div>
-
-        <div class="time-opt-row">
-          <span class="time-opt-label">2ª opção <span class="opt-tag">(opcional)</span></span>
-          <div class="datetime-row">
-            <input class="form-input date-input" id="date2" readonly placeholder="Clique para escolher a data"
-                   onclick="openDatePicker(2)" aria-label="Data da 2ª opção">
-            <input class="form-input time-input" id="time2" readonly placeholder="Clique para escolher o horário"
-                   onclick="openTimePicker(2)" aria-label="Horário da 2ª opção">
-          </div>
-        </div>
-
-        <div class="time-opt-row">
-          <span class="time-opt-label">3ª opção <span class="opt-tag">(opcional)</span></span>
-          <div class="datetime-row">
-            <input class="form-input date-input" id="date3" readonly placeholder="Clique para escolher a data"
-                   onclick="openDatePicker(3)" aria-label="Data da 3ª opção">
-            <input class="form-input time-input" id="time3" readonly placeholder="Clique para escolher o horário"
-                   onclick="openTimePicker(3)" aria-label="Horário da 3ª opção">
-          </div>
-        </div>
-
-      </div>
-      <div class="time-error" id="timeError" role="alert"></div>
-    </div>
-
-    <!-- Observações -->
-    <div class="form-section">
-      <label class="form-label" for="notes">Observações</label>
-      <textarea class="form-textarea" id="notes"
-        placeholder="Preferências, referência de nail art, informações importantes..."></textarea>
-    </div>
-
-    <button class="submit-btn" onclick="sendWhatsApp()">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z" fill="#FFFFFF"/>
-      </svg>
-      Enviar pelo WhatsApp
-    </button>
-
+  <!-- Step progress -->
+  <div class="step-progress" style="padding-left:20px;padding-right:20px;">
+    <div class="step-dot active" id="sdot1">1</div>
+    <div class="step-line"><div class="step-line-fill" id="sline1"></div></div>
+    <div class="step-dot" id="sdot2">2</div>
+    <div class="step-line"><div class="step-line-fill" id="sline2"></div></div>
+    <div class="step-dot" id="sdot3">3</div>
   </div>
+
+  <!-- Steps viewport -->
+  <div class="steps-viewport">
+    <div class="steps-track" id="stepsTrack">
+
+      <!-- ── STEP 1: Nome ── -->
+      <div class="step-panel" id="stepPanel1">
+        <div class="step-header">
+          <div class="step-title">
+            Um prazer<br><strong>te ver aqui!</strong>
+          </div>
+          <div class="booking-for" id="bookingFor">com Letícia</div>
+        </div>
+
+        <div class="form-section">
+          <label class="form-label" for="clientName">Qual seu nome?</label>
+          <input class="form-input" id="clientName" type="text"
+                 placeholder="Como posso te chamar?"
+                 autocomplete="given-name"
+                 oninput="clearNameError()">
+          <div class="name-error" id="nameError"></div>
+        </div>
+
+        <div class="step-nav">
+          <button class="continue-btn" onclick="goStep2()">
+            Continuar
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 3L11 8L6 13" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: Serviço ── -->
+      <div class="step-panel" id="stepPanel2">
+        <div class="step-header">
+          <div class="step-title">
+            Selecione<br><strong>o serviço</strong>
+          </div>
+          <div class="booking-for" id="bookingFor2">com Letícia</div>
+        </div>
+
+        <div class="form-section">
+          <label class="form-label">Serviço desejado</label>
+          <div class="service-chips-form" id="serviceChips">
+            <button class="service-chip-form" onclick="toggleChip(this)" type="button">
+              <span class="chip-label">Unhas em Gel</span><span class="chip-remove">✕</span>
+            </button>
+            <button class="service-chip-form" onclick="toggleChip(this)" type="button">
+              <span class="chip-label">Fibra de Vidro</span><span class="chip-remove">✕</span>
+            </button>
+            <button class="service-chip-form" onclick="toggleChip(this)" type="button">
+              <span class="chip-label">Manutenção</span><span class="chip-remove">✕</span>
+            </button>
+            <button class="service-chip-form" onclick="toggleChip(this)" type="button">
+              <span class="chip-label">Nail Art</span><span class="chip-remove">✕</span>
+            </button>
+            <button class="service-chip-form" onclick="toggleChip(this)" type="button">
+              <span class="chip-label">Esmaltação</span><span class="chip-remove">✕</span>
+            </button>
+            <button class="service-chip-form" onclick="toggleChip(this)" type="button">
+              <span class="chip-label">Remoção</span><span class="chip-remove">✕</span>
+            </button>
+            <button class="service-chip-form" onclick="toggleChip(this)" type="button">
+              <span class="chip-label">Cutículas</span><span class="chip-remove">✕</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <label class="form-label" for="notes">Detalhes do atendimento</label>
+          <textarea class="form-textarea" id="notes"
+            placeholder="Preferências, referência de nail art, informações importantes..."></textarea>
+        </div>
+
+        <div class="step-nav">
+          <button class="continue-btn" onclick="goStep3()">
+            Continuar
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6 3L11 8L6 13" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 3: Data e horário ── -->
+      <div class="step-panel" id="stepPanel3">
+        <div class="step-header">
+          <div class="step-title" style="font-size:22px;">
+            Selecione até<br><strong style="font-size:28px;">3 opções de data</strong>
+          </div>
+          <div class="booking-for" id="bookingFor3">com Letícia</div>
+        </div>
+
+        <div class="form-section">
+          <p class="form-hint">
+            Informe até 3 opções — apenas a 1ª é <span class="hint-req">obrigatória</span>.<br>
+            Toque para escolher data e horário.
+          </p>
+          <div class="time-opt-rows">
+
+            <div class="time-opt-row">
+              <span class="time-opt-label">1ª opção <span class="req">*</span></span>
+              <div class="datetime-row">
+                <input class="form-input date-input" id="date1" readonly placeholder="Data"
+                       onclick="openDatePicker(1)" aria-label="Data da 1ª opção">
+                <input class="form-input time-input" id="time1" readonly placeholder="Horário"
+                       onclick="openTimePicker(1)" aria-label="Horário da 1ª opção">
+              </div>
+            </div>
+
+            <div class="time-opt-row">
+              <span class="time-opt-label">2ª opção <span class="opt-tag">(opcional)</span></span>
+              <div class="datetime-row">
+                <input class="form-input date-input" id="date2" readonly placeholder="Data"
+                       onclick="openDatePicker(2)" aria-label="Data da 2ª opção">
+                <input class="form-input time-input" id="time2" readonly placeholder="Horário"
+                       onclick="openTimePicker(2)" aria-label="Horário da 2ª opção">
+              </div>
+            </div>
+
+            <div class="time-opt-row">
+              <span class="time-opt-label">3ª opção <span class="opt-tag">(opcional)</span></span>
+              <div class="datetime-row">
+                <input class="form-input date-input" id="date3" readonly placeholder="Data"
+                       onclick="openDatePicker(3)" aria-label="Data da 3ª opção">
+                <input class="form-input time-input" id="time3" readonly placeholder="Horário"
+                       onclick="openTimePicker(3)" aria-label="Horário da 3ª opção">
+              </div>
+            </div>
+
+          </div>
+          <div class="time-error" id="timeError" role="alert"></div>
+        </div>
+
+        <div class="step-nav">
+          <button class="submit-btn" onclick="sendWhatsApp()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z" fill="#FFFFFF"/>
+            </svg>
+            Finalizar no WhatsApp
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /steps-track -->
+  </div><!-- /steps-viewport -->
+
 </div>
 
 <!-- ═══════════════ DATE PICKER MODAL ═══════════════ -->
@@ -822,13 +959,81 @@
 const WHATSAPP = '5583991816152';
 const proNames = { leticia: 'Letícia', maria: 'Maria' };
 let currentPro = 'leticia';
+let currentStep = 1;
+
+/* ───── STEP NAVIGATION ───── */
+function updateProgress(step) {
+  currentStep = step;
+
+  // Dots
+  [1,2,3].forEach(n => {
+    const dot = document.getElementById('sdot' + n);
+    dot.classList.remove('active','done');
+    if (n < step)       dot.classList.add('done');
+    else if (n === step) dot.classList.add('active');
+  });
+
+  // Lines
+  [1,2].forEach(n => {
+    const fill = document.getElementById('sline' + n);
+    if (n < step) fill.classList.add('filled');
+    else          fill.classList.remove('filled');
+  });
+
+  // Track slide
+  const track = document.getElementById('stepsTrack');
+  track.style.transform = `translateX(-${(step - 1) * (100/3)}%)`;
+
+  // Topbar title
+  const titles = { 1: 'Seu nome', 2: 'Serviço', 3: 'Data e horário' };
+  document.getElementById('topbarTitle').textContent = titles[step] || 'Agendamento';
+
+  // Scroll each panel to top
+  const panel = document.getElementById('stepPanel' + step);
+  if (panel) panel.scrollTop = 0;
+}
+
+function goStep2() {
+  const name = document.getElementById('clientName').value.trim();
+  if (!name) {
+    const el = document.getElementById('clientName');
+    el.classList.add('field-error');
+    document.getElementById('nameError').textContent = 'Por favor, informe seu nome para continuar.';
+    el.focus();
+    return;
+  }
+  updateProgress(2);
+}
+
+function goStep3() {
+  updateProgress(3);
+}
+
+function clearNameError() {
+  document.getElementById('clientName').classList.remove('field-error');
+  document.getElementById('nameError').textContent = '';
+}
+
+function handleBack() {
+  if (currentStep > 1) {
+    updateProgress(currentStep - 1);
+  } else {
+    closeBooking();
+  }
+}
 
 /* ───── BOOKING SCREEN ───── */
 function openBooking(pro) {
   currentPro = pro;
-  document.getElementById('bookingFor').textContent = 'com ' + proNames[pro];
+  const proLabel = 'com ' + proNames[pro];
+  document.getElementById('bookingFor').textContent  = proLabel;
+  document.getElementById('bookingFor2').textContent = proLabel;
+  document.getElementById('bookingFor3').textContent = proLabel;
+
   // reset form
   document.getElementById('clientName').value = '';
+  document.getElementById('clientName').classList.remove('field-error');
+  document.getElementById('nameError').textContent = '';
   document.getElementById('notes').value = '';
   document.querySelectorAll('.service-chip-form').forEach(c => c.classList.remove('selected'));
   ['date1','time1','date2','time2','date3','time3'].forEach(id => {
@@ -837,7 +1042,22 @@ function openBooking(pro) {
   });
   document.getElementById('timeError').textContent = '';
 
-  const home = document.getElementById('homeScreen');
+  // reset to step 1
+  currentStep = 1;
+  const track = document.getElementById('stepsTrack');
+  track.style.transition = 'none';
+  track.style.transform = 'translateX(0)';
+  setTimeout(() => { track.style.transition = ''; }, 50);
+
+  [1,2,3].forEach(n => {
+    const dot = document.getElementById('sdot' + n);
+    dot.classList.remove('active','done');
+    if (n === 1) dot.classList.add('active');
+  });
+  [1,2].forEach(n => document.getElementById('sline' + n).classList.remove('filled'));
+  document.getElementById('topbarTitle').textContent = 'Seu nome';
+
+  const home    = document.getElementById('homeScreen');
   const booking = document.getElementById('bookingScreen');
   home.classList.add('exiting');
   booking.style.display = 'flex';
@@ -852,7 +1072,7 @@ function openBooking(pro) {
 }
 
 function closeBooking() {
-  const home = document.getElementById('homeScreen');
+  const home    = document.getElementById('homeScreen');
   const booking = document.getElementById('bookingScreen');
   booking.classList.remove('visible');
   home.style.visibility = '';
@@ -884,7 +1104,6 @@ function openDatePicker(n) {
 function renderCalendar() {
   document.getElementById('calMonthLabel').textContent = MONTHS_PT[calMonth] + ' ' + calYear;
 
-  // DOW headers
   const dowRow = document.getElementById('calDowRow');
   dowRow.innerHTML = '';
   DOWS.forEach(d => {
@@ -897,14 +1116,11 @@ function renderCalendar() {
   const daysRow = document.getElementById('calDaysRow');
   daysRow.innerHTML = '';
 
-  const firstDay  = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
-  const daysInMo  = new Date(calYear, calMonth + 1, 0).getDate();
-  const today     = new Date(); today.setHours(0,0,0,0);
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMo = new Date(calYear, calMonth + 1, 0).getDate();
+  const today    = new Date(); today.setHours(0,0,0,0);
+  const curVal   = document.getElementById('date' + activeDateField).value;
 
-  // Current selected value for this field
-  const curVal = document.getElementById('date' + activeDateField).value;
-
-  // Empty cells
   for (let i = 0; i < firstDay; i++) {
     const emp = document.createElement('div');
     emp.className = 'cal-day cal-day--empty';
@@ -918,8 +1134,6 @@ function renderCalendar() {
     const isPast     = date < today;
     const disabled   = isSunday || isPast;
     const isToday    = date.getTime() === today.getTime();
-
-    // format as DD/MM/AAAA for comparison
     const formatted  = pad(d) + '/' + pad(calMonth+1) + '/' + calYear;
     const isSelected = formatted === curVal;
 
@@ -929,9 +1143,7 @@ function renderCalendar() {
       (isToday    ? ' cal-day--today'    : '') +
       (isSelected ? ' cal-day--selected' : '');
     el.textContent = d;
-    if (!disabled) {
-      el.onclick = () => selectDate(d, calMonth, calYear);
-    }
+    if (!disabled) el.onclick = () => selectDate(d, calMonth, calYear);
     daysRow.appendChild(el);
   }
 }
@@ -960,11 +1172,10 @@ let activeTimeField;
 function openTimePicker(n) {
   activeTimeField = n;
   document.getElementById('timePickerTitle').textContent = `${n}ª opção — escolha o horário`;
-  const list = document.getElementById('timeList');
+  const list   = document.getElementById('timeList');
   list.innerHTML = '';
   const curVal = document.getElementById('time' + n).value;
 
-  // 08:00 → 19:00, 30min intervals, João Pessoa / Brasília
   for (let h = 8; h <= 19; h++) {
     const minutes = h === 19 ? [0] : [0, 30];
     minutes.forEach(m => {
@@ -1019,23 +1230,17 @@ function validateTimes() {
   const markErr = (msg, ...ids) => {
     err.textContent = msg;
     ids.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add('field-error'); });
-    // scroll to error
     document.getElementById('timeError').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     return false;
   };
 
   if (!d1) return markErr('Selecione a data da 1ª opção.', 'date1');
   if (!t1) return markErr('Selecione o horário da 1ª opção.', 'time1');
-
-  // optional 2nd
   if (d2 && !t2) return markErr('Selecione o horário da 2ª opção.', 'time2');
   if (!d2 && t2) return markErr('Selecione a data da 2ª opção.', 'date2');
-
-  // optional 3rd
   if (d3 && !t3) return markErr('Selecione o horário da 3ª opção.', 'time3');
   if (!d3 && t3) return markErr('Selecione a data da 3ª opção.', 'date3');
 
-  // duplicates
   const k1 = d1+t1, k2 = (d2&&t2)?d2+t2:null, k3 = (d3&&t3)?d3+t3:null;
   if (k2 && k1===k2) return markErr('1ª e 2ª opção têm o mesmo horário.','date1','time1','date2','time2');
   if (k3 && k1===k3) return markErr('1ª e 3ª opção têm o mesmo horário.');
@@ -1053,11 +1258,11 @@ function sendWhatsApp() {
   const times = validateTimes();
   if (!times) return;
 
-  const name      = document.getElementById('clientName').value.trim();
-  const chipsSel  = [...document.querySelectorAll('.service-chip-form.selected .chip-label')].map(c => c.textContent.trim()).join(', ');
-  const service   = chipsSel || '';
-  const notes     = document.getElementById('notes').value.trim();
-  const proName   = proNames[currentPro];
+  const name     = document.getElementById('clientName').value.trim();
+  const chipsSel = [...document.querySelectorAll('.service-chip-form.selected .chip-label')].map(c => c.textContent.trim()).join(', ');
+  const service  = chipsSel || '';
+  const notes    = document.getElementById('notes').value.trim();
+  const proName  = proNames[currentPro];
 
   let msg = `Olá, ${proName}! 🌸\n\nGostaria de agendar um horário.`;
   if (name)    msg += `\n\n*Nome:* ${name}`;
@@ -1077,9 +1282,9 @@ function pad(n) { return String(n).padStart(2, '0'); }
 /* ───── KEYBOARD ───── */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    closeModal('datePickerModal');
-    closeModal('timePickerModal');
-    closeBooking();
+    if (document.getElementById('datePickerModal').classList.contains('open')) { closeModal('datePickerModal'); return; }
+    if (document.getElementById('timePickerModal').classList.contains('open')) { closeModal('timePickerModal'); return; }
+    handleBack();
   }
 });
 </script>
